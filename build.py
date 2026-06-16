@@ -176,6 +176,9 @@ def build_staging(staging: Path) -> None:
     shutil.copytree(UPSTREAM, staging)
     normalize_lf(staging)
     apply_patches(staging)
+    # git apply가 전역 core.autocrlf를 따라 패치 대상 파일에 CRLF를 재도입할 수 있으므로
+    # 패치 적용 후 다시 LF로 정규화해 dist 산출물 개행을 결정적으로 고정한다.
+    normalize_lf(staging)
     write_plugin_json(staging)
     copy_distribution_docs(staging)
 
