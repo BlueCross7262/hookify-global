@@ -1,0 +1,14 @@
+{
+  "name": "hookify-global-marketplace",
+  "description": "hookify-global 배포용 개인/팀 마켓플레이스",
+  "owner": { "name": "주인" },
+  "plugins": [
+    {
+      "name": "hookify-global",
+      "description": "Anthropic hookify 기반, Apache-2.0. 전역 규칙, UTF-8, read 이벤트 분리, 차단 사유, exec form 훅.",
+      "category": "productivity",
+      "source": "./dist",
+      "license": "Apache-2.0"
+    }
+  ]
+}
