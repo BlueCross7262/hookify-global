@@ -33,7 +33,7 @@ PLUGIN_NAME = "hookify-global"
 PLUGIN_VERSION = "0.1.0-global.1"
 AUTHOR_NAME = "주인"
 PLUGIN_DESCRIPTION = (
-    "Anthropic hookify 기반 전역 규칙·UTF-8·읽기 이벤트·차단 사유·exec form 개선 fork"
+    "Anthropic hookify 기반 전역 규칙·UTF-8·읽기 이벤트·차단 사유 개선 fork"
 )
 
 EXPECTED_PATCHES = [
