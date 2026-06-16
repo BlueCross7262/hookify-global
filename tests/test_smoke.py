@@ -153,6 +153,40 @@ class TestReadEvent(Base):
         self.assertEqual(out, {})
 
 
+class TestReadEventExtraction(Base):
+    """patch 05가 추가한 read 이벤트 발동 경로와 Glob path 추출 분기를 실제로 실행한다."""
+
+    def setUp(self):
+        super().setUp()
+        self.write_rule(self.proj, "hookify.read.local.md",
+                        make_rule("read-rule", "read", "warn",
+                                  "file_path", "contains", "secret", "READ RULE FIRED"))
+
+    def test_read_rule_fires_on_read(self):
+        out = self.run_hook("pretooluse.py", {
+            "hook_event_name": "PreToolUse", "tool_name": "Read",
+            "tool_input": {"file_path": "/x/secret.txt"},
+        })
+        self.assertIn("systemMessage", out)
+        self.assertIn("READ RULE FIRED", out["systemMessage"])
+
+    def test_glob_with_path_fires(self):
+        out = self.run_hook("pretooluse.py", {
+            "hook_event_name": "PreToolUse", "tool_name": "Glob",
+            "tool_input": {"path": "/x/secret", "pattern": "*"},
+        })
+        self.assertIn("systemMessage", out)
+
+    def test_glob_without_path_no_fire_no_crash(self):
+        # path 없는 Glob: _extract_field가 pattern을 경로로 오해하지 않고 None을 반환해
+        # read 규칙이 평가는 되지만 미발동한다(분기가 실제 실행됨, NoneType 크래시 없음).
+        out = self.run_hook("pretooluse.py", {
+            "hook_event_name": "PreToolUse", "tool_name": "Glob",
+            "tool_input": {"pattern": "*.secret"},
+        })
+        self.assertEqual(out, {})
+
+
 class TestBlockReason(Base):
     def test_pretooluse_permission_decision_reason(self):
         self.write_rule(self.proj, "hookify.block.local.md",
