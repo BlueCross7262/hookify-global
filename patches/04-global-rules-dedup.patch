@@ -1,0 +1,27 @@
+diff --git a/core/config_loader.py b/core/config_loader.py
+index e235605..5d6d331 100644
+--- a/core/config_loader.py
++++ b/core/config_loader.py
+@@ -208,9 +208,19 @@ def load_rules(event: Optional[str] = None) -> List[Rule]:
+     """
+     rules = []
+ 
+-    # Find all hookify.*.local.md files
+-    pattern = os.path.join('.claude', 'hookify.*.local.md')
+-    files = glob.glob(pattern)
++    # 프로젝트 규칙과 전역 규칙을 모두 수집한다 (override 아님, additive).
++    project_pattern = os.path.join('.claude', 'hookify.*.local.md')
++    global_pattern = os.path.expanduser(os.path.join('~', '.claude', 'hookify.*.local.md'))
++
++    # 프로젝트 먼저, 전역 나중. 각 glob 결과는 정렬. realpath 기준 중복 제거.
++    files = []
++    seen = set()
++    for path in sorted(glob.glob(project_pattern)) + sorted(glob.glob(global_pattern)):
++        real = os.path.realpath(path)
++        if real in seen:
++            continue
++        seen.add(real)
++        files.append(path)
+ 
+     for file_path in files:
+         try:

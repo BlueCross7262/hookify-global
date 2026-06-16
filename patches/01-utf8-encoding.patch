@@ -1,0 +1,26 @@
+diff --git a/core/config_loader.py b/core/config_loader.py
+index fa2fc3e..d1cc579 100644
+--- a/core/config_loader.py
++++ b/core/config_loader.py
+@@ -248,7 +248,7 @@ def load_rule_file(file_path: str) -> Optional[Rule]:
+         Rule object or None if file is invalid.
+     """
+     try:
+-        with open(file_path, 'r') as f:
++        with open(file_path, 'r', encoding='utf-8') as f:
+             content = f.read()
+ 
+         frontmatter, message = extract_frontmatter(content)
+diff --git a/core/rule_engine.py b/core/rule_engine.py
+index 51561c3..272fc46 100644
+--- a/core/rule_engine.py
++++ b/core/rule_engine.py
+@@ -209,7 +209,7 @@ class RuleEngine:
+                 transcript_path = input_data.get('transcript_path')
+                 if transcript_path:
+                     try:
+-                        with open(transcript_path, 'r') as f:
++                        with open(transcript_path, 'r', encoding='utf-8') as f:
+                             return f.read()
+                     except FileNotFoundError:
+                         print(f"Warning: Transcript file not found: {transcript_path}", file=sys.stderr)

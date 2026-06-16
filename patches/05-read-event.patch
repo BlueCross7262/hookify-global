@@ -1,0 +1,47 @@
+diff --git a/core/rule_engine.py b/core/rule_engine.py
+index 272fc46..f090f0b 100644
+--- a/core/rule_engine.py
++++ b/core/rule_engine.py
+@@ -251,6 +251,16 @@ class RuleEngine:
+                 edits = tool_input.get('edits', [])
+                 return ' '.join(e.get('new_string', '') for e in edits)
+ 
++        elif tool_name in ['Read', 'LS', 'Glob', 'Grep']:
++            # 읽기 전용 도구: 경로만 추출. Glob/Grep의 pattern은 파일 경로로 보지 않는다.
++            if field == 'file_path':
++                if tool_name == 'Read':
++                    return tool_input.get('file_path')
++                elif tool_name == 'LS':
++                    return tool_input.get('path')
++                else:
++                    return tool_input.get('path')
++
+         return None
+ 
+     def _regex_match(self, pattern: str, text: str) -> bool:
+diff --git a/hooks/posttooluse.py b/hooks/posttooluse.py
+index 9c6ccd9..fec340e 100644
+--- a/hooks/posttooluse.py
++++ b/hooks/posttooluse.py
+@@ -36,6 +36,8 @@ def main():
+             event = 'bash'
+         elif tool_name in ['Edit', 'Write', 'MultiEdit']:
+             event = 'file'
++        elif tool_name in ['Read', 'Glob', 'Grep', 'LS']:
++            event = 'read'
+ 
+         # Load rules
+         rules = load_rules(event=event)
+diff --git a/hooks/pretooluse.py b/hooks/pretooluse.py
+index 9aff519..e72d5ac 100644
+--- a/hooks/pretooluse.py
++++ b/hooks/pretooluse.py
+@@ -39,6 +39,8 @@ def main():
+             event = 'bash'
+         elif tool_name in ['Edit', 'Write', 'MultiEdit']:
+             event = 'file'
++        elif tool_name in ['Read', 'Glob', 'Grep', 'LS']:
++            event = 'read'
+ 
+         # Load rules
+         rules = load_rules(event=event)

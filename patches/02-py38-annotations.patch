@@ -1,0 +1,13 @@
+diff --git a/core/config_loader.py b/core/config_loader.py
+index d1cc579..e235605 100644
+--- a/core/config_loader.py
++++ b/core/config_loader.py
+@@ -4,6 +4,8 @@
+ Loads and parses .claude/hookify.*.local.md files.
+ """
+ 
++from __future__ import annotations
++
+ import os
+ import sys
+ import glob
