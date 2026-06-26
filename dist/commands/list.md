@@ -7,14 +7,21 @@ allowed-tools: ["Glob", "Read", "Skill"]
 
 **Load hookify:writing-rules skill first** to understand rule format.
 
-Show all configured hookify rules in the project.
+Show all configured hookify rules - both project rules (`.claude/`) and global rules (`~/.claude/`).
 
 ## Steps
 
-1. Use Glob tool to find all hookify rule files:
-   ```
-   pattern: ".claude/hookify.*.local.md"
-   ```
+1. Use Glob tool to find all hookify rule files (project and global both):
+   - Project rules (this project):
+     ```
+     pattern: ".claude/hookify.*.local.md"
+     ```
+   - Global rules (apply to every project; additive, not override):
+     ```
+     path: "<absolute home>/.claude"   # ~/.claude - resolve $HOME / %USERPROFILE%
+     pattern: "hookify.*.global.md"
+     ```
+     Pass the resolved absolute home `.claude` directory as Glob's `path`. The same realpath loads once.
 
 2. For each file found:
    - Use Read tool to read the file

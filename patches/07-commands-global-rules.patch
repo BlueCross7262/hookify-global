@@ -1,0 +1,66 @@
+diff --git a/commands/configure.md b/commands/configure.md
+index ccc7e47..9393c37 100644
+--- a/commands/configure.md
++++ b/commands/configure.md
+@@ -13,10 +13,17 @@ Enable or disable existing hookify rules using an interactive interface.
+ 
+ ### 1. Find Existing Rules
+ 
+-Use Glob tool to find all hookify rule files:
+-```
+-pattern: ".claude/hookify.*.local.md"
+-```
++Use Glob tool to find all hookify rule files (project and global both):
++- Project rules (this project):
++  ```
++  pattern: ".claude/hookify.*.local.md"
++  ```
++- Global rules (apply to every project):
++  ```
++  path: "<absolute home>/.claude"   # ~/.claude - resolve $HOME / %USERPROFILE%
++  pattern: "hookify.*.global.md"
++  ```
++  Pass the resolved absolute home `.claude` directory as Glob's `path`. Edit accepts the absolute path to toggle a global rule in place.
+ 
+ If no rules found, inform user:
+ ```
+@@ -111,7 +118,7 @@ Changes apply immediately - no restart needed
+ ## Important Notes
+ 
+ - Changes take effect immediately on next tool use
+-- You can also manually edit .claude/hookify.*.local.md files
++- You can also manually edit the rule files (`.claude/hookify.*.local.md` or `~/.claude/hookify.*.global.md`)
+ - To permanently remove a rule, delete its .local.md file
+ - Use `/hookify:list` to see all configured rules
+ 
+diff --git a/commands/list.md b/commands/list.md
+index d6f810f..bc657eb 100644
+--- a/commands/list.md
++++ b/commands/list.md
+@@ -7,14 +7,21 @@ allowed-tools: ["Glob", "Read", "Skill"]
+ 
+ **Load hookify:writing-rules skill first** to understand rule format.
+ 
+-Show all configured hookify rules in the project.
++Show all configured hookify rules - both project rules (`.claude/`) and global rules (`~/.claude/`).
+ 
+ ## Steps
+ 
+-1. Use Glob tool to find all hookify rule files:
+-   ```
+-   pattern: ".claude/hookify.*.local.md"
+-   ```
++1. Use Glob tool to find all hookify rule files (project and global both):
++   - Project rules (this project):
++     ```
++     pattern: ".claude/hookify.*.local.md"
++     ```
++   - Global rules (apply to every project; additive, not override):
++     ```
++     path: "<absolute home>/.claude"   # ~/.claude - resolve $HOME / %USERPROFILE%
++     pattern: "hookify.*.global.md"
++     ```
++     Pass the resolved absolute home `.claude` directory as Glob's `path`. The same realpath loads once.
+ 
+ 2. For each file found:
+    - Use Read tool to read the file

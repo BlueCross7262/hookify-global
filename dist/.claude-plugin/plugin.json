@@ -1,6 +1,6 @@
 {
   "name": "hookify-global",
-  "version": "0.1.0-global.2",
+  "version": "0.1.0-global.3",
   "description": "Anthropic hookify 기반 전역 규칙·UTF-8·읽기 이벤트·차단 사유 개선 fork",
   "author": {
     "name": "주인"

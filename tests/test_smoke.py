@@ -271,5 +271,21 @@ class TestPy38Import(Base):
         self.assertEqual(r.returncode, 0, r.stderr)
 
 
+class TestCommandsGlobalGlob(unittest.TestCase):
+    """patch 07: list·configure 슬래시 명령이 전역 규칙 글롭을 지시하는지(빌드 후 dist 기준)."""
+
+    def setUp(self):
+        if not DIST.is_dir():
+            self.skipTest("dist/ 없음 — 먼저 'python3 build.py' 실행")
+
+    def test_list_command_globs_global_rules(self):
+        txt = (DIST / "commands" / "list.md").read_text(encoding="utf-8")
+        self.assertIn("hookify.*.global.md", txt)
+
+    def test_configure_command_globs_global_rules(self):
+        txt = (DIST / "commands" / "configure.md").read_text(encoding="utf-8")
+        self.assertIn("hookify.*.global.md", txt)
+
+
 if __name__ == "__main__":
     unittest.main()
