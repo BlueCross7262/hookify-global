@@ -102,7 +102,7 @@ class TestEncoding(Base):
 
 class TestGlobalDedup(Base):
     def test_global_and_project_both_load(self):
-        self.write_rule(self.home, "hookify.glob.local.md",
+        self.write_rule(self.home, "hookify.glob.global.md",
                         make_rule("global-rule", "all", "warn",
                                   "command", "contains", "g", "global msg"))
         self.write_rule(self.proj, "hookify.proj.local.md",
@@ -112,14 +112,19 @@ class TestGlobalDedup(Base):
         self.assertEqual(sorted(r["name"] for r in rules),
                          ["global-rule", "project-rule"])
 
-    def test_same_realpath_deduped(self):
-        # HOME == cwd면 프로젝트 글롭과 전역 글롭이 같은 실제 경로를 가리킨다.
-        self.write_rule(self.proj, "hookify.dup.local.md",
-                        make_rule("dup-rule", "all", "warn",
-                                  "command", "contains", "x", "dup msg"))
-        rules = self.load_rules(home=self.proj)
-        self.assertEqual(len(rules), 1)
-        self.assertEqual(rules[0]["name"], "dup-rule")
+    def test_home_local_md_not_loaded(self):
+        # 방법 1: 전역 규칙은 ~/.claude/hookify.*.global.md 만 로드한다.
+        # 홈의 .local.md(옛 전역 파일명)는 더 이상 로드되지 않는다.
+        self.write_rule(self.home, "hookify.old.local.md",
+                        make_rule("old-global", "all", "warn",
+                                  "command", "contains", "o", "old global msg"))
+        self.write_rule(self.home, "hookify.new.global.md",
+                        make_rule("new-global", "all", "warn",
+                                  "command", "contains", "n", "new global msg"))
+        rules = self.load_rules()
+        names = [r["name"] for r in rules]
+        self.assertIn("new-global", names)
+        self.assertNotIn("old-global", names)
 
 
 class TestReadEvent(Base):

@@ -210,7 +210,7 @@ def load_rules(event: Optional[str] = None) -> List[Rule]:
 
     # 프로젝트 규칙과 전역 규칙을 모두 수집한다 (override 아님, additive).
     project_pattern = os.path.join('.claude', 'hookify.*.local.md')
-    global_pattern = os.path.expanduser(os.path.join('~', '.claude', 'hookify.*.local.md'))
+    global_pattern = os.path.expanduser(os.path.join('~', '.claude', 'hookify.*.global.md'))
 
     # 프로젝트 먼저, 전역 나중. 각 glob 결과는 정렬. realpath 기준 중복 제거.
     files = []
