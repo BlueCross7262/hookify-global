@@ -110,8 +110,10 @@ class RuleEngine:
         tool_input = input_data.get('tool_input', {})
 
         # cwd_scope: 활성 시 cwd가 패턴과 일치하는 워크스페이스에서만 룰을 발동한다.
-        if rule.cwd_scope and rule.cwd_pattern:
-            if not self._regex_match(rule.cwd_pattern, input_data.get('cwd', '')):
+        # 패턴이 비면(오타·누락) 전역 차단으로 새지 않도록 어디서도 발동하지 않는다(fail-safe).
+        if rule.cwd_scope:
+            cwd = input_data.get('cwd') or ''
+            if not rule.cwd_pattern or not self._regex_match(rule.cwd_pattern, cwd):
                 return False
 
         # Check tool matcher if specified
