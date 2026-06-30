@@ -1,0 +1,31 @@
+--- a/core/config_loader.py
++++ b/core/config_loader.py
+@@ -42,5 +42,7 @@ class Rule:
+     action: str = "warn"  # "warn" or "block" (future)
+     tool_matcher: Optional[str] = None  # Override tool matching
+     message: str = ""  # Message body from markdown
++    cwd_scope: bool = False  # cwd 기반 워크스페이스 스코프 활성화 여부
++    cwd_pattern: str = ""  # cwd_scope 활성 시 매칭할 작업 디렉터리 정규식
+
+     @classmethod
+@@ -83,4 +83,6 @@
+             action=frontmatter.get('action', 'warn'),
+             tool_matcher=frontmatter.get('tool_matcher'),
+-            message=message.strip()
++            message=message.strip(),
++            cwd_scope=frontmatter.get('cwd_scope', False),
++            cwd_pattern=frontmatter.get('cwd_pattern', ''),
+         )
+--- a/core/rule_engine.py
++++ b/core/rule_engine.py
+@@ -108,5 +108,10 @@
+         # Extract tool information
+         tool_name = input_data.get('tool_name', '')
+         tool_input = input_data.get('tool_input', {})
++
++        # cwd_scope: 활성 시 cwd가 패턴과 일치하는 워크스페이스에서만 룰을 발동한다.
++        if rule.cwd_scope and rule.cwd_pattern:
++            if not self._regex_match(rule.cwd_pattern, input_data.get('cwd', '')):
++                return False
+
+         # Check tool matcher if specified
