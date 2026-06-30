@@ -336,6 +336,32 @@ class TestCwdScope(Base):
         })
         self.assertIn("hookSpecificOutput", out)
 
+    def test_empty_pattern_fires_nowhere(self):
+        # cwd_scope: true 인데 cwd_pattern 누락 → fail-safe, 어디서도 발동 안 함.
+        content = (
+            "---\nname: cwd-misconfig\nenabled: true\nevent: bash\naction: block\n"
+            "cwd_scope: true\n"
+            "conditions:\n  - field: command\n    operator: regex_match\n    pattern: .\n"
+            "---\nMISCONFIG\n"
+        )
+        self.write_rule(self.proj, "hookify.misconfig.local.md", content)
+        out = self.run_hook("pretooluse.py", {
+            "hook_event_name": "PreToolUse", "tool_name": "Bash",
+            "tool_input": {"command": "ls"},
+            "cwd": r"D:\Project\hookify-global",
+        })
+        self.assertEqual(out, {})
+
+    def test_cwd_none_no_crash_no_fire(self):
+        # cwd 가 명시적 null → 빈 문자열로 수렴, TypeError 없이 미발동.
+        self.write_rule(self.proj, "hookify.cwd.local.md", self.CWD_RULE)
+        out = self.run_hook("pretooluse.py", {
+            "hook_event_name": "PreToolUse", "tool_name": "Bash",
+            "tool_input": {"command": "ls"},
+            "cwd": None,
+        })
+        self.assertEqual(out, {})
+
 
 if __name__ == "__main__":
     unittest.main()

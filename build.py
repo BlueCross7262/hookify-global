@@ -30,7 +30,7 @@ DIST = REPO / "dist"
 
 MARKETPLACE_NAME = "hookify-global-marketplace"
 PLUGIN_NAME = "hookify-global"
-PLUGIN_VERSION = "0.1.0-global.4"
+PLUGIN_VERSION = "0.1.0-global.5"
 AUTHOR_NAME = "주인"
 PLUGIN_DESCRIPTION = (
     "Anthropic hookify 기반 전역 규칙·UTF-8·읽기 이벤트·차단 사유 개선 fork"
