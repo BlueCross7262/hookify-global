@@ -2,6 +2,7 @@
 """Rule evaluation engine for hookify plugin."""
 
 import re
+import os
 import sys
 from functools import lru_cache
 from typing import List, Dict, Any, Optional
@@ -116,6 +117,11 @@ class RuleEngine:
             if not rule.cwd_pattern or not self._regex_match(rule.cwd_pattern, cwd):
                 return False
 
+        # cwd_path_scope: 명령 인자의 파일 경로가 cwd 안일 때만 발동(특정 불가 시 skip).
+        if rule.cwd_path_scope:
+            if not self._command_targets_inside_cwd(tool_input, input_data.get('cwd') or ''):
+                return False
+
         # Check tool matcher if specified
         if rule.tool_matcher:
             if not self._matches_tool(rule.tool_matcher, tool_name):
@@ -149,6 +155,38 @@ class RuleEngine:
         # Split on | for OR matching
         patterns = matcher.split('|')
         return tool_name in patterns
+
+    def _command_targets_inside_cwd(self, tool_input: Dict[str, Any], cwd: str) -> bool:
+        """명령 인자 중 cwd 안을 가리키는 파일 경로가 있는지 확인한다.
+
+        구분자(슬래시·역슬래시·~)가 있는 토큰만 경로로 본다. 경로를 특정할 수
+        없으면 False, cwd 밖만 가리켜도 False.
+        """
+        if not cwd:
+            return False
+        command = tool_input.get('command')
+        if not isinstance(command, str) or not command:
+            return False
+        try:
+            root = os.path.normcase(os.path.abspath(cwd))
+        except (TypeError, ValueError):
+            return False
+        for tok in command.split():
+            tok = tok.strip('\'"')
+            if '/' not in tok and '\\' not in tok and not tok.startswith('~'):
+                continue
+            if re.match(r'[a-z][a-z0-9+.-]*://', tok, re.IGNORECASE):
+                continue  # URL(http://·git:// 등)은 파일 경로 아님
+            p = os.path.expanduser(tok)
+            if not os.path.isabs(p):
+                p = os.path.join(cwd, p)
+            try:
+                p = os.path.normcase(os.path.abspath(p))
+            except (TypeError, ValueError):
+                continue
+            if p == root or p.startswith(root + os.sep):
+                return True
+        return False
 
     def _check_condition(self, condition: Condition, tool_name: str,
                         tool_input: Dict[str, Any], input_data: Dict[str, Any] = None) -> bool:

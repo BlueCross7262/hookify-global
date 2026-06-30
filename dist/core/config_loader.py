@@ -44,6 +44,7 @@ class Rule:
     message: str = ""  # Message body from markdown
     cwd_scope: bool = False  # cwd 기반 워크스페이스 스코프 활성화 여부
     cwd_pattern: str = ""  # cwd_scope 활성 시 매칭할 작업 디렉터리 정규식
+    cwd_path_scope: bool = False  # 명령 인자의 파일 경로가 cwd 안일 때만 발동
 
     @classmethod
     def from_dict(cls, frontmatter: Dict[str, Any], message: str) -> 'Rule':
@@ -87,6 +88,7 @@ class Rule:
             message=message.strip(),
             cwd_scope=frontmatter.get('cwd_scope', False),
             cwd_pattern=frontmatter.get('cwd_pattern', ''),
+            cwd_path_scope=frontmatter.get('cwd_path_scope', False),
         )
 
 
