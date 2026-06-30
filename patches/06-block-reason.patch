@@ -2,7 +2,7 @@ diff --git a/core/rule_engine.py b/core/rule_engine.py
 index f090f0b..8deade0 100644
 --- a/core/rule_engine.py
 +++ b/core/rule_engine.py
-@@ -62,23 +62,26 @@ class RuleEngine:
+@@ -62,23 +62,25 @@ class RuleEngine:
              messages = [f"**[{r.name}]**\n{r.message}" for r in blocking_rules]
              combined_message = "\n\n".join(messages)
  
@@ -18,8 +18,8 @@ index f090f0b..8deade0 100644
 +                        "hookEventName": "PreToolUse",
 +                        "permissionDecision": "deny",
 +                        "permissionDecisionReason": combined_message
-+                    },
-                     "systemMessage": combined_message
++                    }
+-                    "systemMessage": combined_message
                  }
 -            elif hook_event in ['PreToolUse', 'PostToolUse']:
 +            elif hook_event in ['PostToolUse', 'Stop', 'UserPromptSubmit']:
