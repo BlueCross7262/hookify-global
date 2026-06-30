@@ -42,6 +42,8 @@ class Rule:
     action: str = "warn"  # "warn" or "block" (future)
     tool_matcher: Optional[str] = None  # Override tool matching
     message: str = ""  # Message body from markdown
+    cwd_scope: bool = False  # cwd 기반 워크스페이스 스코프 활성화 여부
+    cwd_pattern: str = ""  # cwd_scope 활성 시 매칭할 작업 디렉터리 정규식
 
     @classmethod
     def from_dict(cls, frontmatter: Dict[str, Any], message: str) -> 'Rule':
@@ -82,7 +84,9 @@ class Rule:
             conditions=conditions,
             action=frontmatter.get('action', 'warn'),
             tool_matcher=frontmatter.get('tool_matcher'),
-            message=message.strip()
+            message=message.strip(),
+            cwd_scope=frontmatter.get('cwd_scope', False),
+            cwd_pattern=frontmatter.get('cwd_pattern', ''),
         )
 
 

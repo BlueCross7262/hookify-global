@@ -243,7 +243,7 @@ class TestBlockReason(Base):
 
 
 class TestHooksJson(Base):
-    def test_hooks_json_valid_and_execform(self):
+    def test_hooks_json_valid_and_shellform(self):
         data = json.loads((HOOKS / "hooks.json").read_text(encoding="utf-8"))
         events = data["hooks"]
         self.assertEqual(set(events),
@@ -253,9 +253,9 @@ class TestHooksJson(Base):
                 for hook in group["hooks"]:
                     if hook.get("type") == "command":
                         self.assertIn("command", hook)
-                        self.assertIn("args", hook)
-                        self.assertIsInstance(hook["args"], list)
-                        self.assertEqual(hook["command"], "python3")
+                        # patch 03 환원: shell-form 유지(exec-form args 없음).
+                        self.assertNotIn("args", hook)
+                        self.assertTrue(hook["command"].startswith("python3 "))
 
 
 class TestPy38Import(Base):
@@ -285,6 +285,56 @@ class TestCommandsGlobalGlob(unittest.TestCase):
     def test_configure_command_globs_global_rules(self):
         txt = (DIST / "commands" / "configure.md").read_text(encoding="utf-8")
         self.assertIn("hookify.*.global.md", txt)
+
+
+class TestCwdScope(Base):
+    """patch 08: cwd_scope 플래그로 워크스페이스 한정 발동/스킵을 검증한다."""
+
+    CWD_RULE = (
+        "---\n"
+        "name: cwd-block\n"
+        "enabled: true\n"
+        "event: bash\n"
+        "action: block\n"
+        "cwd_scope: true\n"
+        r"cwd_pattern: ^D:[\\/]Project[\\/]hookify-global" "\n"
+        "conditions:\n"
+        "  - field: command\n"
+        "    operator: regex_match\n"
+        "    pattern: .\n"
+        "---\n"
+        "CWD SCOPED BLOCK\n"
+    )
+
+    def test_fires_when_cwd_matches(self):
+        self.write_rule(self.proj, "hookify.cwd.local.md", self.CWD_RULE)
+        out = self.run_hook("pretooluse.py", {
+            "hook_event_name": "PreToolUse", "tool_name": "Bash",
+            "tool_input": {"command": "ls"},
+            "cwd": r"D:\Project\hookify-global",
+        })
+        self.assertIn("hookSpecificOutput", out)
+        self.assertEqual(out["hookSpecificOutput"]["permissionDecision"], "deny")
+
+    def test_skips_when_cwd_differs(self):
+        self.write_rule(self.proj, "hookify.cwd.local.md", self.CWD_RULE)
+        out = self.run_hook("pretooluse.py", {
+            "hook_event_name": "PreToolUse", "tool_name": "Bash",
+            "tool_input": {"command": "ls"},
+            "cwd": r"C:\Other\workspace",
+        })
+        self.assertEqual(out, {})
+
+    def test_absent_flag_is_global(self):
+        self.write_rule(self.proj, "hookify.plain.local.md",
+                        make_rule("plain-block", "bash", "block",
+                                  "command", "regex_match", ".", "PLAIN BLOCK"))
+        out = self.run_hook("pretooluse.py", {
+            "hook_event_name": "PreToolUse", "tool_name": "Bash",
+            "tool_input": {"command": "ls"},
+            "cwd": r"C:\anywhere",
+        })
+        self.assertIn("hookSpecificOutput", out)
 
 
 if __name__ == "__main__":
