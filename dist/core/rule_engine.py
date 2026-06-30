@@ -117,7 +117,7 @@ class RuleEngine:
             if not rule.cwd_pattern or not self._regex_match(rule.cwd_pattern, cwd):
                 return False
 
-        # cwd_path_scope: 명령 인자의 파일 경로가 cwd 안일 때만 발동(특정 불가 시 skip).
+        # cwd_path_scope: 명령 인자/편집 file_path 의 경로가 cwd 안일 때만 발동(특정 불가 시 skip).
         if rule.cwd_path_scope:
             if not self._command_targets_inside_cwd(tool_input, input_data.get('cwd') or ''):
                 return False
@@ -157,21 +157,25 @@ class RuleEngine:
         return tool_name in patterns
 
     def _command_targets_inside_cwd(self, tool_input: Dict[str, Any], cwd: str) -> bool:
-        """명령 인자 중 cwd 안을 가리키는 파일 경로가 있는지 확인한다.
+        """명령 인자 또는 편집 도구(file_path)의 파일 경로가 cwd 안을 가리키는지 확인한다.
 
         구분자(슬래시·역슬래시·~)가 있는 토큰만 경로로 본다. 경로를 특정할 수
         없으면 False, cwd 밖만 가리켜도 False.
         """
         if not cwd:
             return False
-        command = tool_input.get('command')
-        if not isinstance(command, str) or not command:
-            return False
         try:
             root = os.path.normcase(os.path.abspath(cwd))
         except (TypeError, ValueError):
             return False
-        for tok in command.split():
+        tokens = []
+        command = tool_input.get('command')
+        if isinstance(command, str) and command:
+            tokens.extend(command.split())
+        file_path = tool_input.get('file_path')
+        if isinstance(file_path, str) and file_path:
+            tokens.append(file_path)
+        for tok in tokens:
             tok = tok.strip('\'"')
             if '/' not in tok and '\\' not in tok and not tok.startswith('~'):
                 continue
