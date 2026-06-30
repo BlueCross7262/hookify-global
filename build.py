@@ -30,7 +30,7 @@ DIST = REPO / "dist"
 
 MARKETPLACE_NAME = "hookify-global-marketplace"
 PLUGIN_NAME = "hookify-global"
-PLUGIN_VERSION = "0.1.0-global.5"
+PLUGIN_VERSION = "0.1.0-global.6"
 AUTHOR_NAME = "주인"
 PLUGIN_DESCRIPTION = (
     "Anthropic hookify 기반 전역 규칙·UTF-8·읽기 이벤트·차단 사유 개선 fork"
@@ -45,6 +45,7 @@ EXPECTED_PATCHES = [
     "06-block-reason.patch",
     "07-commands-global-rules.patch",
     "08-cwd-scope.patch",
+    "09-cwd-path-scope.patch",
 ]
 
 VERSION_RE = re.compile(r"^0\.1\.0-global\.\d+$")

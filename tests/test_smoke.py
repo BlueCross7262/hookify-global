@@ -363,5 +363,68 @@ class TestCwdScope(Base):
         self.assertEqual(out, {})
 
 
+class TestCwdPathScope(Base):
+    """patch 09: cwd_path_scope — 명령 인자 경로가 cwd 안일 때만 발동."""
+
+    RULE = (
+        "---\nname: path-block\nenabled: true\nevent: bash\naction: block\n"
+        "cwd_path_scope: true\n"
+        "conditions:\n  - field: command\n    operator: regex_match\n    pattern: .\n"
+        "---\nPATH SCOPED\n"
+    )
+
+    def _run(self, command):
+        self.write_rule(self.proj, "hookify.path.local.md", self.RULE)
+        return self.run_hook("pretooluse.py", {
+            "hook_event_name": "PreToolUse", "tool_name": "Bash",
+            "tool_input": {"command": command},
+            "cwd": str(self.proj),
+        })
+
+    def test_inside_relative_applies(self):
+        out = self._run("cat ./src/x.txt")
+        self.assertIn("hookSpecificOutput", out)
+
+    def test_inside_absolute_applies(self):
+        out = self._run(f"rm {self.proj}/y.txt")
+        self.assertIn("hookSpecificOutput", out)
+
+    def test_outside_home_skips(self):
+        out = self._run("cat ~/.claude/foo.md")
+        self.assertEqual(out, {})
+
+    def test_no_path_token_skips(self):
+        out = self._run("python build.py")
+        self.assertEqual(out, {})
+
+    def test_bare_command_skips(self):
+        out = self._run("ls")
+        self.assertEqual(out, {})
+
+    def test_mixed_inside_outside_applies(self):
+        out = self._run("cp ./a.txt ~/.claude/b.md")
+        self.assertIn("hookSpecificOutput", out)
+
+    def test_absolute_outside_skips(self):
+        out = self._run("cat C:/Windows/System32/x.txt")
+        self.assertEqual(out, {})
+
+    def test_url_not_treated_as_path(self):
+        out = self._run("curl http://example.com/x")
+        self.assertEqual(out, {})
+
+    def test_absent_flag_fires_regardless(self):
+        # cwd_path_scope 없는 룰은 경로 무관 발동(하위호환).
+        self.write_rule(self.proj, "hookify.plain.local.md",
+                        make_rule("plain", "bash", "block",
+                                  "command", "regex_match", ".", "PLAIN"))
+        out = self.run_hook("pretooluse.py", {
+            "hook_event_name": "PreToolUse", "tool_name": "Bash",
+            "tool_input": {"command": "cat ~/.claude/x"},
+            "cwd": str(self.proj),
+        })
+        self.assertIn("hookSpecificOutput", out)
+
+
 if __name__ == "__main__":
     unittest.main()
