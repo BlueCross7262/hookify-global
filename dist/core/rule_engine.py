@@ -70,8 +70,7 @@ class RuleEngine:
                         "hookEventName": "PreToolUse",
                         "permissionDecision": "deny",
                         "permissionDecisionReason": combined_message
-                    },
-                    "systemMessage": combined_message
+                    }
                 }
             elif hook_event in ['PostToolUse', 'Stop', 'UserPromptSubmit']:
                 # 나머지 차단 이벤트는 top-level decision/reason을 사용한다.
@@ -109,6 +108,11 @@ class RuleEngine:
         # Extract tool information
         tool_name = input_data.get('tool_name', '')
         tool_input = input_data.get('tool_input', {})
+
+        # cwd_scope: 활성 시 cwd가 패턴과 일치하는 워크스페이스에서만 룰을 발동한다.
+        if rule.cwd_scope and rule.cwd_pattern:
+            if not self._regex_match(rule.cwd_pattern, input_data.get('cwd', '')):
+                return False
 
         # Check tool matcher if specified
         if rule.tool_matcher:
